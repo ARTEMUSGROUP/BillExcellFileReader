@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="poi-3.7-20101029.jar"/>
 	<classpathentry kind="lib" path="poi-ooxml-3.7-20101029.jar"/>
 	<classpathentry kind="lib" path="xmlbeans-2.6.0.jar"/>
+	<classpathentry kind="lib" path="mysql-connector-java-5.1.10-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

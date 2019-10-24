@@ -425,6 +425,7 @@ public class MigrateBLXLS extends LoadProperty{
 				}
 			} 
 		//objmSendMail.sendMail(dbname, path+"RESPONSE/"+f1.getName(), f1.getName(),"Response : Bill Excel file." ,bodyText);
+		//While putting on the server use following code
 		objmSendMail.sendMail(dbname, path+"RESPONSE\\"+f1.getName(), f1.getName(),"Response : Bill Excel file." ,bodyText);
 	}
 
@@ -721,15 +722,18 @@ public class MigrateBLXLS extends LoadProperty{
 		try{
 			if(blxlsBean.getLoadPort()!=null ){
 				loadPort=blxlsBean.getLoadPort().trim();
+				//objBillDetailBean.setReceiptPlace(loadPort);
 			}
 			if(blxlsBean.getDischargePort()!=null ){
 				dischargePort=blxlsBean.getDischargePort().trim();
+				//objBillDetailBean.setDeliveryPlace(dischargePort);
 			}
 			if(!loadPort.equals("")){
 				if(objmLocationDAO.checkForLocationName(loadPort, loginScac)){
 					objmForeignPortBean = objmLocationDAO.getLoadPortListFromName(objBillDetailBean.getVoyageId(), loginScac,loadPort);
 					if(objmForeignPortBean.size()!=0){
 						objBillDetailBean.setLoadPort(objmForeignPortBean.get(0).getPortCode());
+						objBillDetailBean.setReceiptPlace(objmForeignPortBean.get(0).getPortName());
 					}else{
 						resultMSg = "'"+loadPort+"'" +" Load Port does not exist in the system. ";
 					}
@@ -747,6 +751,7 @@ public class MigrateBLXLS extends LoadProperty{
 					
 					if(objmdDistrictPortBean.size()!=0){
 						objBillDetailBean.setDischargePort(objmdDistrictPortBean.get(0).getPortCode());
+						objBillDetailBean.setDeliveryPlace(objmdDistrictPortBean.get(0).getPortName());
 					}else{
 						resultMSg = "'"+dischargePort+"'" +" Discharge Port does not exist in the system. ";
 					}
@@ -990,13 +995,14 @@ public class MigrateBLXLS extends LoadProperty{
 			objBillDetailBean.setBillStatus("COMPLETE");
 		}
 		//default value of billdetailbean
-		objBillDetailBean.setReceiptPlace("");
-		objBillDetailBean.setDeliveryPlace("");
-		objBillDetailBean.setBillType("");
+		//objBillDetailBean.setReceiptPlace("");
+		//objBillDetailBean.setDeliveryPlace("");
+		objBillDetailBean.setBillType("WAY BILL");
 		objBillDetailBean.setMasterBill("");
 		objBillDetailBean.setScacBill("");
 		objBillDetailBean.setMoveType(blxlsBean.getMoveType());
 		objBillDetailBean.setNvoType("NON NVO");
+		//objBillDetailBean.setNvoBill("MASTER");
 
 		//objBillDetailBean.setOriginCountry("");
 		objBillDetailBean.setCreatedUser("admin");
