@@ -2,6 +2,8 @@ package migrate;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import mail.SendMail;
@@ -101,7 +103,6 @@ public class MigrateBLXLS extends LoadProperty{
 								Double cw = cell.getNumericCellValue();
 								int rowVal = cw.intValue();
 								cellValue  = String.valueOf(rowVal);
-								//System.out.println(cellValue);
 								break;
 								//	                case Cell.CELL_TYPE_BLANK:
 								//	                	cellValue ="";
@@ -146,6 +147,8 @@ public class MigrateBLXLS extends LoadProperty{
 								objBlxlsBean.setStatus(cellValue);
 							}else if (cell.getColumnIndex()==18){
 								objBlxlsBean.setMarksAndNumbers(cellValue);
+							}else if( cell.getColumnIndex()==19) {
+								objBlxlsBean.setEquipmentSizeType(cellValue);
 							}
 
 							if((cellValue.equals("")||cellValue==null)&&i==0)
@@ -822,10 +825,15 @@ public class MigrateBLXLS extends LoadProperty{
 				else
 					objEquipmentBean.setEquipment(blxlsBean.getContainer());
 
-				if(objEquipmentBean.getEquipment().equalsIgnoreCase("N/C")||objEquipmentBean.getEquipment().equals(""))
+				//if(objEquipmentBean.getEquipment().equalsIgnoreCase("N/C")||objEquipmentBean.getEquipment().equals(""))
+				if(objEquipmentBean.getEquipment().equalsIgnoreCase("N/C"))
 					objEquipmentBean.setSizeType("");
-				else
-					objEquipmentBean.setSizeType("40RFH");
+				else{
+					if(blxlsBean.getEquipmentSizeType()==null) {
+							objEquipmentBean.setSizeType("40RFH");
+						}else
+							objEquipmentBean.setSizeType(blxlsBean.getEquipmentSizeType());
+					}
 				
 				String SEAL1=blxlsBean.getSeal();
 				if(SEAL1!=null){
@@ -851,6 +859,7 @@ public class MigrateBLXLS extends LoadProperty{
 		//Equipment[] objmEquipmentsbean=blbean.getEquipment();
 		//Package[] objmPackagesbean=blbean.getPackage();
 		Attribute attributebean = new Attribute();
+		String pieces;
 		String containerWeight;
 		String weightUnit;
 		String marksAndNumber="";
@@ -862,15 +871,21 @@ public class MigrateBLXLS extends LoadProperty{
 		marksAndNumber=marksAndNumber.trim();
 		marksAndNumber=marksAndNumber.toUpperCase();
 		objPackageBean.setMarks(marksAndNumber);
-		objPackageBean.setPieces(blxlsBean.getBoxes());
+		
+		pieces = blxlsBean.getBoxes();
+		if(pieces!=null){
+			pieces = pieces.replaceAll("[^0-9]", ""); 
+			 }
+		objPackageBean.setPieces(pieces);
 
 		objPackageBean.setPackages("CTN");
 		//weight
 		containerWeight = blxlsBean.getContainerWeight();
-		if(containerWeight!=null){
-			containerWeight = containerWeight.replaceAll("[^0-9.]", "");
-		}
+		//System.out.println("containerWeight :"+containerWeight);
 		
+		if(containerWeight!=null){
+			 containerWeight = containerWeight.replaceAll("[^0-9.]", ""); 
+			 }
 		weightUnit = blxlsBean.getUnit();
 		
 		if(weightUnit!=null && weightUnit!=""){
@@ -878,8 +893,13 @@ public class MigrateBLXLS extends LoadProperty{
 					if(containerWeight==null ||containerWeight.equals("")){
 						objPackageBean.setWtm(Double.parseDouble("0.0"));
 					}
-					else
+					else {
+						//double objDouble;
+						//DecimalFormat decimal = new DecimalFormat("#.00");
+						//objDouble = Double.parseDouble(containerWeight);
 						objPackageBean.setWtm(Double.parseDouble(containerWeight));
+						//objPackageBean.setWtm(Double.parseDouble(decimal.format(objDouble)));
+					}
 					if(weightUnit!=null)
 						objPackageBean.setWtmUnit(weightUnit);
 					objPackageBean.setWti(Double.parseDouble("0.0"));

@@ -22,6 +22,8 @@ public class BLXLSBean {
 	String country;
 	String status;
 	String marksAndNumbers;
+	String equipmentSizeType;
+	
 	
 	
 	public String getMarksAndNumbers() {
@@ -152,6 +154,18 @@ public class BLXLSBean {
 	}
 	public void setCountry(String country) {
 		this.country = country;
+	}
+	/**
+	 * @return the equipmentSizeType
+	 */
+	public String getEquipmentSizeType() {
+		return equipmentSizeType;
+	}
+	/**
+	 * @param equipmentSizeType the equipmentSizeType to set
+	 */
+	public void setEquipmentSizeType(String equipmentSizeType) {
+		this.equipmentSizeType = equipmentSizeType;
 	}
 	
 	
