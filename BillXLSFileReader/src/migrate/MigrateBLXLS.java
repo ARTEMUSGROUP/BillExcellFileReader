@@ -2,9 +2,12 @@ package migrate;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import mail.SendMail;
 
@@ -12,8 +15,6 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.apache.xmlbeans.impl.regex.REUtil;
-
 import response.ErrorMsgBean;
 import response.Response;
 import beans.amsBeans.Attribute;
@@ -215,6 +216,7 @@ public class MigrateBLXLS extends LoadProperty{
 		for (int i = 0; i < objBlxlsBeanList.size(); i++) {
 			objBillDetailBean = new BillDetailBean();
 			objErrorMsgBean = new ErrorMsgBean();
+			errorMsg = "";
 			String billLadingNumber = "";
 			String vesselVoyage = "";
 			String harmonizedCode = "";
@@ -241,12 +243,16 @@ public class MigrateBLXLS extends LoadProperty{
 			if(billLadingNumber.length()>12){
 				errorMsg = "- The Bill Number exceeds its maximum number of characters, it should have max 12 char.";
 			}
+			
 			errorMsg = errorMsg + validateCustomer(objBlxlsBeanList.get(i));
 			errorMsg = errorMsg + validateVesselVoyage(vesselVoyage);
 			errorMsg = errorMsg + validateLoadPortDischargePort(objBlxlsBeanList.get(i));
 			errorMsg = errorMsg + validateHarmonizedCode(objBlxlsBeanList.get(i));
 			errorMsg = errorMsg + validateCountry(country);
 			
+			//-----New code for pieces------
+			errorMsg = errorMsg + validatePackage(objBlxlsBeanList.get(i));
+	
 			populateEquipment(objBlxlsBeanList.get(i));
 			populatePackage(objBlxlsBeanList.get(i));
 			populateCargo(objBlxlsBeanList.get(i));
@@ -331,17 +337,47 @@ public class MigrateBLXLS extends LoadProperty{
 				
 			}
 		}
+		
+		
+		/*ArrayList<EquipmentBean> newList = new ArrayList<EquipmentBean>();
+		  
+        // Traverse through the first list
+        for (EquipmentBean element : objBillDetailBeans.get(0).getObjmEquipmentBean()) {
+  
+            // If this element is not present in newList
+            // then add it
+            if (!newList.contains(element)) {
+  
+                newList.add(element);
+            }
+        }
+        objBillDetailBeans.get(0).getObjmEquipmentBean().clear();
+		objBillDetailBeans.get(0).setObjmEquipmentBean(newList);
+		*/
+		ArrayList<EquipmentBean> deduped = null;
+		for(int i=0; i<objBillDetailBeans.size();i++) {
+		deduped = new ArrayList<>(objBillDetailBeans.get(i).getObjmEquipmentBean().stream().collect(
+                Collectors.toMap(EquipmentBean::getEquipment, obj -> obj,
+                (existingValue, newValue) -> existingValue))
+               .values());
+		
+		objBillDetailBeans.get(i).setObjmEquipmentBean(deduped);
+		}
+		//objBillDetailBeans.get(0).setObjmEquipmentBean(dedupedNew);
 		insertIntoBillHeader(objBillDetailBeans);
 	}
 	
 	public void mergerEquipment(BillDetailBean objBillDetailBean, BillDetailBean objBillDetailBean2){
 		
-		objBillDetailBean2.getObjmEquipmentBean().add(objBillDetailBean.getObjmEquipmentBean().get(0));
+			objBillDetailBean2.getObjmEquipmentBean().add(objBillDetailBean.getObjmEquipmentBean().get(0));
+		
 	}
 	
 	public void mergerDuplicateEquipment(BillDetailBean objBillDetailBean, BillDetailBean objBillDetailBean2){
-		objBillDetailBean2.getObjmEquipmentBean().set(0, objBillDetailBean.getObjmEquipmentBean().get(0));
+		
+			objBillDetailBean2.getObjmEquipmentBean().set(0, objBillDetailBean.getObjmEquipmentBean().get(0));
 		// (objBillDetailBean.getObjmEquipmentBean().get(0));
+			
 	}
 	
 	public void mergerPackage(BillDetailBean objBillDetailBean, BillDetailBean objBillDetailBean2){
@@ -421,15 +457,25 @@ public class MigrateBLXLS extends LoadProperty{
 		
 		bodyText = bodyText+"\n\n\n"+"Rejected Bill's are :";
 		if (objErrorMsgBeanList.size()!=0) {
+			
 				//These BL's has been error.
 				for (int j = 0; j < objErrorMsgBeanList.size(); j++) {
 						bodyText= bodyText +"\n "+"("+(j+1)+") "+ objErrorMsgBeanList.get(j).getBillLadingNumber() + ": "+objErrorMsgBeanList.get(j).getErrorMsg();
-					result=false;
+						result=false;
 				}
+				System.out.println("bodyText  :"+bodyText);
+				
 			} 
 		//objmSendMail.sendMail(dbname, path+"RESPONSE/"+f1.getName(), f1.getName(),"Response : Bill Excel file." ,bodyText);
 		//While putting on the server use following code
-		objmSendMail.sendMail(dbname, path+"RESPONSE\\"+f1.getName(), f1.getName(),"Response : Bill Excel file." ,bodyText);
+	
+			try {
+				objmSendMail.sendMail(dbname, path+"RESPONSE\\"+f1.getName(), f1.getName()," Response - Bill Excel file upload." ,bodyText);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
 	}
 
 /*	public String validateBillNumber(String billLadingNumber, String loginScac) throws Exception {
@@ -705,7 +751,7 @@ public class MigrateBLXLS extends LoadProperty{
 					objBillDetailBean.setVoyageId(voyageId);
 					objBillDetailBean.setCarrierScac(objVesselBean.getUsaScacCode());
 				}else{
-					returnMsg = "Voyage "+"'"+voyageNumber+"'" + " does not exist in the system. ";
+					returnMsg = "Vessel or Voyage "+"'"+vessel+"/"+voyageNumber+"'" + " does not exist in the system. ";
 				}
 				
 			}catch (Exception e) {
@@ -770,6 +816,26 @@ public class MigrateBLXLS extends LoadProperty{
 		}
 		return resultMSg;
 	}
+	public String validatePackage(BLXLSBean blxlsBean) throws Exception {
+		String returnMsg="";
+		try{
+			if(blxlsBean.getBoxes()==null || blxlsBean.getBoxes().equals("") ){
+				//returnMsg = "'"+blxlsBean.getBoxes()+"'"+ " HarmonizedCode does not exist in the system";
+				returnMsg = "'"+blxlsBean.getContainer()+"'"+" Enter Valid Pieces or Boxes for the container.";
+				if(blxlsBean.getContainerWeight()==null || blxlsBean.getContainerWeight().equals("") ){
+					returnMsg = returnMsg +" Enter Valid Container Weight.";
+					if(blxlsBean.getUnit()==null || blxlsBean.getUnit().equals("") ){
+						returnMsg = returnMsg + " Enter Valid Container Unit.";
+					}
+				}
+			}
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return returnMsg;
+	}
+	
 	public String validateHarmonizedCode(BLXLSBean blxlsBean) throws Exception {
 		ArrayList<CargoBean> objmCargoBeans=new ArrayList<CargoBean>();
 		CargoBean objmCargoBean=new CargoBean();
@@ -794,7 +860,6 @@ public class MigrateBLXLS extends LoadProperty{
 		}
 		return returnMsg;
 	}
-	
 	public String validateCountry(String country) throws Exception {
 	
 		String returnCountry = "";
@@ -829,7 +894,7 @@ public class MigrateBLXLS extends LoadProperty{
 				if(objEquipmentBean.getEquipment().equalsIgnoreCase("N/C"))
 					objEquipmentBean.setSizeType("");
 				else{
-					if(blxlsBean.getEquipmentSizeType()==null) {
+					if(blxlsBean.getEquipmentSizeType()==null || blxlsBean.getEquipmentSizeType().equals("")) {
 							objEquipmentBean.setSizeType("40RFH");
 						}else
 							objEquipmentBean.setSizeType(blxlsBean.getEquipmentSizeType());
@@ -881,13 +946,12 @@ public class MigrateBLXLS extends LoadProperty{
 		objPackageBean.setPackages("CTN");
 		//weight
 		containerWeight = blxlsBean.getContainerWeight();
-		//System.out.println("containerWeight :"+containerWeight);
+		//System.out.println("containerWeight1 :"+containerWeight);
 		
 		if(containerWeight!=null){
 			 containerWeight = containerWeight.replaceAll("[^0-9.]", ""); 
 			 }
 		weightUnit = blxlsBean.getUnit();
-		
 		if(weightUnit!=null && weightUnit!=""){
 				attributebean.setType(("Wt. (M)")); 
 					if(containerWeight==null ||containerWeight.equals("")){

@@ -168,5 +168,4 @@ public class BLXLSBean {
 		this.equipmentSizeType = equipmentSizeType;
 	}
 	
-	
 }

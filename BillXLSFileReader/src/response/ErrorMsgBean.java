@@ -57,6 +57,12 @@ public class ErrorMsgBean {
 	public void setBillLadingNumber(String billLadingNumber) {
 		this.billLadingNumber = billLadingNumber;
 	}
+
+	@Override
+	public String toString() {
+		return "ErrorMsgBean [billLadingNumber=" + billLadingNumber + ", errorMsg=" + errorMsg + ", loadPort="
+				+ loadPort + ", dischargePort=" + dischargePort + ", hsCode=" + hsCode + ", country=" + country + "]";
+	}
 	
 
 }

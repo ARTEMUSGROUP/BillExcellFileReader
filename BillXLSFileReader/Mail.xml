@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <MailConfig>
-<host>smtp.gmail.com</host>
+<!-- <host>smtp.gmail.com</host>
 <port>25</port>
 <from>artemusedi@gmail.com</from>
-<password>artemus1</password>
+<password>artemus1</password> -->
+
+	<host>email-smtp.us-east-1.amazonaws.com</host>
+	<port>587</port>
+	<from>artemusedi@gmail.com</from>
+	<smtp_username>AKIAQMPTVMFWV6XSGQS2</smtp_username>
+	<smtp_password>BBaiogpBHW/Q/WQghUj/TU8ji61td5Sm/STlby/IjudI</smtp_password>
 </MailConfig>

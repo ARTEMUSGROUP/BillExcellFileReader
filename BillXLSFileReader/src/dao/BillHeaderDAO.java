@@ -772,7 +772,7 @@ public class BillHeaderDAO {
 					" country_of_origin= ?, place_of_receipt= ?, place_of_delivery= ?," +
 					" move_type= ?, split_bill_number=?, shipment_type=?,transmission_type=?, " +
 					" carnet_number=?, carnet_country=?, shipment_sub_type=?, estimated_value=?, estimated_quantity=?, " +
-					"unit_of_measure=?, estimated_weight=?, weight_qualifier=? " +
+					"unit_of_measure=?, estimated_weight=?, weight_qualifier=?,update_date = now() " +
 					"where bill_lading_id=? and login_scac=?");
 			stmt.setString(1, objmBillDetailBean.getBillStatus());
 			stmt.setString(2,objmBillDetailBean.getBillType());
