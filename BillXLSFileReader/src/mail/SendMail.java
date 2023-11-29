@@ -145,7 +145,8 @@ public class SendMail  extends LoadProperty{
 	    		
 
 	    		// Create a Properties object to contain connection configuration information.
-	    		Properties props = System.getProperties();
+		         System.setProperty("jdk.tls.version", "TLSv1.2");
+		         Properties props = System.getProperties();
 	    		props.put("mail.transport.protocol", "smtp");
 	    		props.put("mail.smtp.port", PORT); 
 	    		props.put("mail.smtp.starttls.enable", "true");
